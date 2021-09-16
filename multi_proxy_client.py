@@ -32,7 +32,7 @@ def main():
     address = [(HOST, PORT)]
     #establish 10 different connections
     with Pool() as p:
-        p.map(connect, address * 3)
+        p.map(connect, address * 10)
 
 if __name__ == "__main__":
     main()
