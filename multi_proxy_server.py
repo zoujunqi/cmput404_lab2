@@ -16,7 +16,7 @@ def get_remote_ip(host):
     try:
         remote_ip = socket.gethostbyname( host )
     except socket.gaierror:
-        print ('Hostname could not be resolved. Exiting')
+        print('Hostname could not be resolved. Exiting')
         sys.exit()
 
     print(f'Ip address of {host} is {remote_ip}')
@@ -59,3 +59,6 @@ def main():
 
             # close the connection!
             conn.close()
+
+if __name__ == "__main__":
+    main()
