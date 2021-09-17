@@ -24,18 +24,27 @@ def get_remote_ip(host):
 
 
 #echo connections back to client
-def handle_request(addr, conn):
-    print("Connected by", addr)
-    full_data = conn.recv(BUFFER_SIZE)
-    conn.sendall(full_data)
-    conn.shutdown(socket.SHUT_RDWR)
-    conn.close()
+def handle_request(conn, proxy_end):
+    # send data
+    send_full_data = conn.recv(BUFFER_SIZE)
+    print(f"Sending recieved data {send_full_data} to goofle")
+    proxy_end.sendall(send_full_data)
+
+    # remember to shut down!!
+    proxy_end.shutdown(socket.SHUT_WR)
+
+    data = proxy_end.recv(BUFFER_SIZE)
+    print(f"Sending recieved data {data} to client")
+
+    # send data back
+    conn.send(data)
 
 
 def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as proxy_start: #establish "start" of proxy (connects to localhost)
         # bind, and set to listening mode
-        proxy_start.bind((HOST,PORT))
+        proxy_start.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        proxy_start.bind((HOST, PORT))
         proxy_start.listen(1)
 
         while True:
@@ -53,8 +62,9 @@ def main():
                 # now for the multiprocessing...
 
                 # allow for multiple connections with a Process daemon
-                p = Process(target=handle_request, args=(addr, conn))
+                p = Process(target=handle_request, args=(conn, proxy_end))
                 p.daemon = True
+                p.start()
                 # make sure to set target = handle_request when creating the process.
 
             # close the connection!
